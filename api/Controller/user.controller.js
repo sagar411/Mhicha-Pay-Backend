@@ -38,7 +38,7 @@ class UserController {
             }
             
         }catch(err){
-            logger.err(err);
+            logger.error(err);
             next(err);
         }
     }
@@ -77,7 +77,7 @@ class UserController {
         logger.http("POST /user/login")
        
             try{
-                const {error,value} = emailValidationSchema.validate(req.body);
+                const {error,value} = userloginValidation.validate(req.body);
                 console.log(value.email,value.password);
                 if(error){
                     throw  error
