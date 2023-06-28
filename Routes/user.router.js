@@ -9,6 +9,9 @@ userRoute.route("/signup")
 userRoute.route("/verify_email")
     .post(user_ctrl.verifyEmail);
 
+userRoute.route("/login")
+    .post(user_ctrl.userLogin)
+
 userRoute.route("/:id")
     .get()
     .post()

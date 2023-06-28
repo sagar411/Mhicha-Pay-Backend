@@ -1,7 +1,7 @@
 const nodemailer = require("nodemailer");
 const {google} = require('googleapis');
 const {CLIENT_ID,CLIENT_SECRETS, REDIRECT_URI, REFRESH_TOKEN, EMAIL }=require("./constant");
-
+const logger = require("./logger");
 const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRETS, REDIRECT_URI);
 
 oAuth2Client.setCredentials({
@@ -9,7 +9,6 @@ oAuth2Client.setCredentials({
 });
 
 const sendMail = async ({ email, subject, text,html})=>{
-    console.log(CLIENT_ID);
     try{
 
         const accessToken = await oAuth2Client.getAccessToken();
@@ -35,8 +34,10 @@ const sendMail = async ({ email, subject, text,html})=>{
         });
     }catch(e){
         
-        console.log("eRROR FROM SEND EMAIL",e);
+        
        throw e;
+       logger.error(e);
+
        
     }
 }
@@ -65,7 +66,7 @@ const userVerifyMail = (email,value,otp)=>{
 
         
     });
-    console.log("Email send ");
+    
 }
 
 module.exports = {userVerifyMail};

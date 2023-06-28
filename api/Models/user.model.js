@@ -28,6 +28,9 @@ const UserSchemadef = new mongoose.Schema({
     }, 
     address: {
         type: String
+    },
+    mpin:{
+        type:String
     }
 
 

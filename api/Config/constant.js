@@ -9,6 +9,7 @@ CLIENT_SECRETS = process.env.CLIENT_SECRETS;
 REDIRECT_URI=process.env.REDIRECT_URI;
 REFRESH_TOKEN=process.env.REFRESH_TOKEN;
 EMAIL =process.env.EMAIL;
+JWT_SECRET = process.env.JWT_SECRET;
 
 module.exports = {
     PORT,
@@ -18,5 +19,6 @@ module.exports = {
     CLIENT_ID,
     CLIENT_SECRETS,
     REDIRECT_URI,
-    REFRESH_TOKEN,EMAIL
+    REFRESH_TOKEN,EMAIL,
+    JWT_SECRET
 }
