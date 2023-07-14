@@ -6,8 +6,7 @@ const generateOtp = ()=>{
         otp += alphanumeric.charAt(~~(Math.random()* alphanumeric.length));  
     };
     return  otp;
-
 }
-console.log(generateOtp());
+
 
 module.exports = {generateOtp};

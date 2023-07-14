@@ -4,7 +4,14 @@ const createError = require("http-errors")
 const {EMAIL} = process.env;
 
 class UserService{
+    getUserById = (user_id)=>{
+        try{
+            return UserModel.findById(user_id);
 
+        }catch(error){
+            throw error;
+        }
+    }
 
     userFindByEmail = (data)=>{
         console.log("here i am");
@@ -23,11 +30,18 @@ class UserService{
         }
     }
     userRegister =(data)=>{
+        console.log("hello! guys!");
         try{
             console.log(data);
             data['password'] = bcrypt.hashSync(data['password'],10);
             console.log(data);
-            let user = new UserModel(data);
+
+            let user = new UserModel({
+                email: data.email,
+                name: data.name,
+                password:data.password,
+                mpin: data.mpin
+            });
             
             return user.save();
         }catch(err){

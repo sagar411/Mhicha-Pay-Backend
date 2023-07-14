@@ -15,13 +15,21 @@ const UserSchemadef = new mongoose.Schema({
         enum:["admin","user"],
         default: "user"
     },
+    saving:{
+        type:Number,
+        default:0.0
+    },
+    sapati:{
+        type:Number,
+        default:0.0
+    },
     kyc:{
         type:Boolean,
         default: false
     },
     balance: {
         type:Number,
-        default:500
+        default:500.0
     },
     image:{
         type: String

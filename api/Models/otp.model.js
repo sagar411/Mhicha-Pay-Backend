@@ -5,7 +5,7 @@ const OtpSchemaDef = new mongoose.Schema({
         type:String
     },
     otp:{
-        type: Number,
+        type: String,
     },
     type:{
         type: String
@@ -17,5 +17,5 @@ const OtpSchemaDef = new mongoose.Schema({
 })
 OtpSchemaDef.index({createdAt:1},{expireAfterSeconds:60});
 
-const  OtpModel = new mongoose.model("OTP", OtpSchemaDef);
+const  OtpModel =  mongoose.model("OTP", OtpSchemaDef);
 module.exports = OtpModel;

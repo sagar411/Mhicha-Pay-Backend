@@ -23,7 +23,11 @@ app.use((err,req,res,next)=>{
     })
 })
 
-app.listen(PORT,HOST_NAME,(error)=>{
+app.use("/hello",(req,res,next)=>{
+    res.send("hello");
+})
+
+app.listen(3000,"0.0.0.0",(error)=>{
     if(error){
         console.log("Problem while running server")
     }else{

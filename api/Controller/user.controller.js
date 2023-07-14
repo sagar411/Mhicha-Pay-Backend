@@ -11,28 +11,73 @@ const AuthService = require("../services/auth.service");
 const { generateToken } = require("../Config/jwt");
 const auth_svc = new AuthService();
 
-
 class UserController {
+    findMe =async(req,res,next)=>{
+        logger.http('GET /users/me');
+        const id = req.params.id;
+        let me = await auth_svc.findMEbyId(id);
+        me = {
+            _id: me._id,
+            name:me.name,
+            email: me.email,
+            role:me.role,
+            kyc:me.kyc,
+            balance:me.balance,
+            sapati:me.sapati,
+            saving: me.saving,
+            mpin:me.mpin
+        }
+        res.send(me);
+    };
+    
+
+    otpVerifyByEmai = async(req,res,next)=> {
+        logger.http("POST /user/findOtp");
+        try{
+            const type = "verifyemail";
+            const email = req.body.email;
+            const otp = req.body.otp;
+
+                let response = await otp_svc.findOtpByEmailId(email,type,otp);
+                
+               
+                if(response.length > 0){
+                    res.send({
+                        message:"Otp verified!!",
+                        status:true
+                    });
+                }else{
+                    
+                    throw createError.NotFound("otp not found");
+                }
+            
+
+        }catch(error){
+            next(error);
+        }
+
+    }
     verifyEmail = async(req,res,next)=>{
-        
+        console.log("hello");
         logger.http("POST /user/verify_email");
-        const otp = generateOtp();
-        const taskName = "verifyemail"
-        
         try{
             const {error ,value}= await emailValidationSchema.validate(req.body);
-            
             const doesExist =await user_service.userFindByEmail(value.email);
-
+            const otp = generateOtp();
+        console.log(otp);
+        const taskName = "verifyemail";
             if(doesExist){
                 throw createError.Conflict("User Already exist!");
-                
+                 
             }else if(error){
                 throw error;
             }else{
                 
-                userVerifyMail(value.email, taskName,otp);
-                let response =await otp_svc.saveOtp(otp,taskName,);
+                console.log("email",value.email);
+                console.log("otp",otp);
+                console.log("taskna")
+                // userVerifyMail(value.email, taskName,otp);
+                let response =await otp_svc.saveOtp(value.email, otp, taskName);
                 res.send(response);
                 logger.info("Email Verified")
             }
@@ -44,7 +89,7 @@ class UserController {
     }
 
     userCreate = async(req,res,next)=>{
-        console.log("hello !!")
+        
         logger.http("POST /user/signup");
         
         try{
@@ -88,9 +133,6 @@ class UserController {
                     );
 
                 }
-
-                
-
             }catch(err){
                 logger.error(err);
                 next(err);
