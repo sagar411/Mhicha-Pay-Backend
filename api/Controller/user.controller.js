@@ -12,6 +12,36 @@ const { generateToken } = require("../Config/jwt");
 const auth_svc = new AuthService();
 
 class UserController {
+    findReciver = async (req,res,next)=>{
+        logger.http('GET /users/reciver/email');
+        const email  = req.params.email;
+        let receiver = await  auth_svc.findReceiverByEmail(email);
+        const currentUser = req.auth_user;
+        try{
+            if(!receiver || receiver == null){
+                next({
+                    status:400,
+                    message: "Invalid email"
+                });
+            }else if( receiver.email== currentUser.email ){
+                next({
+                    status:400,
+                    message:"Self-transfer is not allowed!"
+                });
+            }else{
+                res.send(receiver);
+            }
+
+        }catch(error){
+            next(error);
+        }
+        if(!receiver|| receiver ==null){
+            
+
+        }
+        // console.log(receiver.name);
+
+    }
     findMe =async(req,res,next)=>{
         logger.http('GET /users/me');
         const id = req.params.id;

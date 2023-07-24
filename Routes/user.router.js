@@ -15,10 +15,8 @@ userRoute.route("/login")
     .post(user_ctrl.userLogin)
 
 userRoute.route("/me/:id")
-    .get(letLogoinCheck,user_ctrl.findMe)
-
-    .get()
-    .post()
-    .delete()
+    .get(letLogoinCheck,user_ctrl.findMe);
+userRoute.route("/receiver/:email")
+    .get(letLogoinCheck,user_ctrl.findReciver);
 
 module.exports = userRoute;

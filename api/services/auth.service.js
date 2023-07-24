@@ -4,6 +4,16 @@ const {generateToken} = require("../Config/jwt");
 
 const createError = require("http-errors");
 class AuthService{
+    findReceiverByEmail = async(email)=>{
+        try{
+            const receiver = await UserModel.findOne({"email":email});
+            return receiver;
+        }catch(err){
+          
+            
+            throw err;
+        }
+    }
     findMEbyId = async(id)=>{
         try{
             const me = await UserModel.findById(id);

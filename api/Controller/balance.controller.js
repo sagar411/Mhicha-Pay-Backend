@@ -94,7 +94,14 @@ class BalanceController {
                     
                 );
                 res.send({
-                    result:"true"
+                transactionId: sendBalance._id,
+                reciver:reciver.name,
+                reciverEmail:reciver.email,
+                cashFlow:"Out",
+                amount,
+                remarks,
+                purpose,
+                date:sendBalance.createdAt
                 }
                 );
                 
