@@ -29,6 +29,7 @@ class UserController {
                     message:"Self-transfer is not allowed!"
                 });
             }else{
+                
                 res.send(receiver);
             }
 
@@ -167,11 +168,6 @@ class UserController {
                 logger.error(err);
                 next(err);
             }
-            
-            
-    
-
-
     }
     
     

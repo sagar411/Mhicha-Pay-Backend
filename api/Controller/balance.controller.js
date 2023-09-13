@@ -112,5 +112,8 @@ class BalanceController {
 
         }
     }
+    saveMoney = (req,res,next)=>{
+        
+    }
 }
 module.exports= BalanceController;
