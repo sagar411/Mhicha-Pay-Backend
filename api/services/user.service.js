@@ -14,7 +14,7 @@ class UserService{
     }
 
     userFindByEmail = (data)=>{
-        console.log("here i am");
+        
         try{
             let users =  UserModel.findOne({email:data});
             if(users){
@@ -30,7 +30,7 @@ class UserService{
         }
     }
     userRegister =(data)=>{
-        console.log("hello! guys!");
+        
         try{
             console.log(data);
             data['password'] = bcrypt.hashSync(data['password'],10);
@@ -47,6 +47,12 @@ class UserService{
         }catch(err){
             throw err;
         }
+    }
+    userUpdate =(data,id)=>{
+        return UserModel.findByIdAndUpdate(id,{
+            $set:data
+        })
+
     }
 }
 module.exports = UserService;

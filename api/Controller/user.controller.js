@@ -169,6 +169,46 @@ class UserController {
                 next(err);
             }
     }
+    updateUser = async(req,res,next)=>{
+        logger.http("PUT /user/update")
+        try{
+            let data = req.body;
+            const {error,value}= await userCreateSchema.validate(req.body);
+            const userid = req.auth_user;
+
+            if(error){
+                next(error);
+
+            }else{
+                let response = await user_service.userUpdate(data, userid);
+
+                if(response){
+                    res.send(
+                        {
+                            result:response
+                        }
+                    )
+
+                }else{
+                    next({
+                        status:400,
+                        msg:"Sorry there was problem in update"
+                    })
+                }
+
+            }
+            
+
+            
+
+
+        }catch(err){
+            next(
+                err
+            );
+        }
+
+    }
     
     
 }

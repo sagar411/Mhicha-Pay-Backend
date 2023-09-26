@@ -18,5 +18,7 @@ userRoute.route("/me/:id")
     .get(letLogoinCheck,user_ctrl.findMe);
 userRoute.route("/receiver/:email")
     .get(letLogoinCheck,user_ctrl.findReciver);
+userRoute.route("/update-profile")
+    .put(letLogoinCheck,user_ctrl.updateUser);
 
 module.exports = userRoute;

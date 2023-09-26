@@ -3,6 +3,8 @@ const BalanceModel = require("../Models/balance.model");
 const UserModel = require("../Models/user.model");
 const { sendAmountSchema } = require("../validators/balance.schema");
 const {getTodayDate} = require("../Config/date");
+const { savingSchema } = require("../validators/saving.schema");
+const SavingModel = require("../Models/saving.model");
 class BalanceController {
 
     sendMoney = async(req,res,next)=> {
@@ -112,8 +114,89 @@ class BalanceController {
 
         }
     }
-    saveMoney = (req,res,next)=>{
+    saveMoney = async(req,res,next)=>{
+        logger.http("POST /saving");
+        const currentUser = req.auth_user;
+
+        try{
+            const {error,value} = await savingSchema.validate(req.body);
+            
+            const savingamount = value.savingamount;
+            const purpose = value.purpose;
+            const date = getTodayDate();
+            
+            if(error){
+                console.log(error);
+                throw error;
+            }else{
+                if(currentUser.balance<savingamount){
+                    console.log(currentUser.balance);
+                next({
+                    status:500,
+                    message:"insufficiant balance to save"
+                })
+
+            }else{
+                const saveBalance = new SavingModel({
+                    userId:currentUser._id,
+                    savingamount:savingamount,
+                    purpose:purpose,
+                });
+                // currentUser.balance = currentUser.balance - savingamount;
+                // currentUser.saving = currentUser.saving + savingamount;
+                await Promise.all([
+                    saveBalance.save(),
+                    UserModel.findByIdAndUpdate(
+                        currentUser._id,
+                        {
+                            balance:currentUser.balance -savingamount,
+                            saving:currentUser.saving + savingamount
+                        }
+
+                    )
+
+                ]);                
+                
+                res.send(
+                    {
+                        message:"Successfully saved",
+                        savingamount:savingamount,
+                        purpose:purpose,
+                        date:date
+                    }
+                );
+            }
+        }
+        }catch(error){
+            console.log(error);
+            next(error);
+        }
+
         
+    }
+    fetchSavingDetailes   = async(req,res,next)=>{
+        logger.http("GET /savings");
+        const user = req.auth_user;
+        const list = await SavingModel.find(
+            {
+                "userId": user
+            }
+        );
+        console.log(list);
+        if(list.length ===0){
+            res.send(
+                {
+                    message:"No Saving found",
+                    status:true
+                }
+            )
+        }else{
+            res.send(
+                {
+                    savingsList:list
+                }
+            )
+        }
     }
 }
 module.exports= BalanceController;
