@@ -5,6 +5,7 @@ const { sendAmountSchema } = require("../validators/balance.schema");
 const {getTodayDate} = require("../Config/date");
 const { savingSchema } = require("../validators/saving.schema");
 const SavingModel = require("../Models/saving.model");
+const { ObjectId } = require('mongoose').Types;
 class BalanceController {
 
     sendMoney = async(req,res,next)=> {
@@ -141,6 +142,9 @@ class BalanceController {
                     userId:currentUser._id,
                     savingamount:savingamount,
                     purpose:purpose,
+                    createdAt:date,
+                    activity:"Saving"
+                    
                 });
                 // currentUser.balance = currentUser.balance - savingamount;
                 // currentUser.saving = currentUser.saving + savingamount;
@@ -197,6 +201,80 @@ class BalanceController {
                 }
             )
         }
+    }
+    withdraw =async (req,res,next)=>{
+         logger.http("POST /user/savewithdraw");
+         const currentUser = req.auth_user;
+         const savingId = req.params.id;
+         console.log("Hello");
+         console.log(savingId);
+         
+
+        try{
+            // const {error,value} = await savingSchema.validate(req.body);
+            // const withdrawAmount = value.withdrawAmount;
+            const purpose = req.body.purpose;
+            const date = getTodayDate();
+            
+
+          const result =  await SavingModel.find({ "userId": currentUser, "_id":savingId.toString() });
+          console.log(result);
+          const numberofdays =getTodayDate().diff(result[0].createdAt,'months');
+          console.log(numberofdays);
+          console.log(result[0].savingamount);
+          if(!result[0].paid){
+                 
+               
+                const saveBalance = new SavingModel({
+                    userId:currentUser._id,
+                    savingamount:result[0].savingamount,
+                    purpose:purpose,
+                    paid:true,
+                    createdAt:date,
+                    activity:"withdraw"
+                });
+                
+                await Promise.all([
+                    saveBalance.save(),
+                    UserModel.findByIdAndUpdate(
+                        currentUser._id,
+                        {
+                            saving:currentUser.saving - result[0].savingamount ,
+                            balance:currentUser.balance +result[0].savingamount +((numberofdays+result[0].interestRate +result[0].savingamount) /100),
+                        }
+
+                    ),
+                    SavingModel.findByIdAndUpdate(savingId,{
+                        paid:true
+                    })
+
+
+
+                ]);                
+                
+                res.send(
+                    {
+                        message:"Successfully withdraw",
+                        withdrawamount:result[0].savingamount,
+                        purpose:purpose,
+                        date:date
+                        
+                    }
+                );
+          }else{
+            next({
+                status:401,
+                message:"Not found"
+            })
+          }
+            
+
+      
+        }catch(error){
+            console.log(error);
+            next(error);
+        }
+
     }
 }
 module.exports= BalanceController;

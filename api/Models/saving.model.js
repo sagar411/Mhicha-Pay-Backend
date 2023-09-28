@@ -20,6 +20,10 @@ const savingSchema = new mongoose.Schema({
     interestRate: {
         type: Number,
         default: 0.0 // Default to 0% interest
+    },
+    activity:{
+        type:String
+        
     }
     
 });
