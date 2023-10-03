@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 const UserSchemadef = new mongoose.Schema({
     name: {
@@ -17,19 +18,19 @@ const UserSchemadef = new mongoose.Schema({
     },
     saving:{
         type:Number,
-        default:0.0
+        default:0.1
     },
     sapati:{
         type:Number,
-        default:0.0
+        default:0.1
     },
-    kyc:{
+    twofactor:{
         type:Boolean,
         default: false
     },
     balance: {
         type:Number,
-        default:500.0
+        default: 500.1,
     },
     image:{
         type: String
@@ -40,13 +41,16 @@ const UserSchemadef = new mongoose.Schema({
     mpin:{
         type:String
     }
-
-
 },{
     timestamps: true,
     autoCreate:true,
     autoIndex:true
 })
+UserSchemadef.pre("save", function (next) {
+    // Ensure that balance is stored as a double with two decimal places
+    this.balance = parseFloat(this.balance).toFixed(2);
+    next();
+});
 
 const UserModel = mongoose.model("User", UserSchemadef)
 module.exports = UserModel;

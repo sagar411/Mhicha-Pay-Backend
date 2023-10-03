@@ -5,6 +5,9 @@ const { sendAmountSchema } = require("../validators/balance.schema");
 const {getTodayDate} = require("../Config/date");
 const { savingSchema } = require("../validators/saving.schema");
 const SavingModel = require("../Models/saving.model");
+const { sapatiSchema } = require("../validators/sapati.schema");
+const SapatiModel = require("../Models/sapati.model");
+const { admin } = require("googleapis/build/src/apis/admin");
 const { ObjectId } = require('mongoose').Types;
 class BalanceController {
 
@@ -146,8 +149,6 @@ class BalanceController {
                     activity:"Saving"
                     
                 });
-                // currentUser.balance = currentUser.balance - savingamount;
-                // currentUser.saving = currentUser.saving + savingamount;
                 await Promise.all([
                     saveBalance.save(),
                     UserModel.findByIdAndUpdate(
@@ -188,10 +189,10 @@ class BalanceController {
         );
         console.log(list);
         if(list.length ===0){
-            res.send(
+            next(
                 {
                     message:"No Saving found",
-                    status:true
+                    status:false
                 }
             )
         }else{
@@ -206,8 +207,6 @@ class BalanceController {
          logger.http("POST /user/savewithdraw");
          const currentUser = req.auth_user;
          const savingId = req.params.id;
-         console.log("Hello");
-         console.log(savingId);
          
 
         try{
@@ -233,6 +232,7 @@ class BalanceController {
                     createdAt:date,
                     activity:"withdraw"
                 });
+                const sapatiamountAfterwithdraw = (numberofdays*result[0].interestRate *result[0].savingamount) /100;
                 
                 await Promise.all([
                     saveBalance.save(),
@@ -240,7 +240,7 @@ class BalanceController {
                         currentUser._id,
                         {
                             saving:currentUser.saving - result[0].savingamount ,
-                            balance:currentUser.balance +result[0].savingamount +((numberofdays+result[0].interestRate +result[0].savingamount) /100),
+                            balance:currentUser.balance +result[0].savingamount +sapatiamountAfterwithdraw,
                         }
 
                     ),
@@ -276,5 +276,233 @@ class BalanceController {
         }
 
     }
+    sapati = async(req,res,next)=>{
+        logger.http("POST, /sapati")
+        const currentUser = req.auth_user;
+        console.log(req.body);
+        try{
+            const {error,value} = await sapatiSchema.validate(req.body);
+            
+            const sapatiamount = value.sapatiAmount;
+            console.log(sapatiamount);
+            const purpose = value.purpose;
+            const date = getTodayDate();
+            
+
+
+            if(error){
+                console.log(error);
+                throw error;
+
+            }else{
+                    if(currentUser.sapati>1){
+                    next({
+                        status:400,
+                        message:"Already taken"
+                    });
+                    
+                    }else if(currentUser.balance >10.01 && currentUser.saving>10.01 ){
+                    next({
+                        status:400,
+                        message:"Your balance must be less then 10 "
+                    });
+
+                }else { 
+                    console.log(sapatiamount);
+                    const sapatiBalance = new SapatiModel({
+                        userId:currentUser._id,
+                        userName:currentUser.name,
+                        sapatiAmount:sapatiamount,
+                        purpose:purpose,
+                        createdAt:date,
+                        activity:"Sapati"
+                    });
+                    sapatiBalance.save();
+                    res.send(
+                        {
+                            message:"Sapati has requested to admin",
+                            sapatiamount:sapatiamount,
+                            purpose:purpose,
+                            date:date
+                        }
+                    )
+                }
+            }
+
+        }catch(error){
+            next(error);
+        }
+        
+
+    }
+    sapatiRequestList = async(req,res,next)=>{
+        try{
+            const result = await SapatiModel.find({});
+            console.log(result.length);
+            if(result.length<=0){
+                next(
+                    {status:400,
+                    message:"List not found"
+                }
+                )
+            }else{
+                res.send(result);
+                
+            }
+        }catch(error){
+            next(error);
+        }
+
+    }
+    approveSapati = async(req,res,next)=>{
+        logger.http("POST /sapati/approve");
+        const adminId = req.auth_user;
+        const sapatiID = req.params.id;
+        // console.log(adminId);
+
+        try{
+            const result  = await SapatiModel.findOne({
+                "_id":sapatiID.toString()
+            });
+            const requestUser = await UserModel.find({"_id":result.userId.toString()});
+            console.log(requestUser[0].name);
+            console.log(result.sapatiAmount);
+            const balance = adminId.balance - result.sapatiAmount;
+            console.log(balance);
+
+            
+            if(!result.approvedByAdmin){
+
+                await Promise.all([ 
+                    UserModel.findByIdAndUpdate(
+                        requestUser,
+                        {
+                            sapati:requestUser[0].sapati + result.sapatiAmount,
+                            balance:requestUser[0].balance + result.sapatiAmount
+                        }
+
+                    ),
+                    UserModel.findByIdAndUpdate(
+                        adminId,
+                        {
+                            balance:adminId.balance - result.sapatiAmount
+                        }
+                    ),
+                    SapatiModel.findByIdAndUpdate(result.id,{
+                        approvedByAdmin:true
+
+                    }),
+                    
+
+                ]);
+                res.send("Successfully approved and sent")
+
+
+            }else{
+                next({
+                    status:401,
+                    message:"Already approved"
+                })
+            }
+        }catch(error){
+            next(error);
+        }
+        
+
+    }
+    getSapatiList = async(req,res,next)=>{
+        const currentUser = req.auth_user;
+        const list = await SapatiModel.find({
+            "userId":currentUser
+        });
+
+        // const approvedData = list.filter(item => item.approvedByAdmin === true)
+
+        if(list.length ===0){
+            next(
+                {
+                    message:"No sapati found!",
+                    status:false
+                }
+            )
+        }else{
+             res.send(list)
+            
+        }
+        
+
+    }
+    returnSapati = async(req,res,next)=>{
+        logger.http("POST /user/returnsapati")
+        const currentUser = req.auth_user;
+        const sapatiId = req.params.id;
+        const admin = "65185b36fe804bae8cc6115d";
+
+        try{
+            const result = await SapatiModel.find({"userId":currentUser._id, "_id":sapatiId });
+            console.log(currentUser.sapati);
+            const amountUserPay = result[0].sapatiAmount +15;
+            console.log(amountUserPay);
+            const adminData = await UserModel.find({"_id":admin});
+            console.log(adminData);
+            if(currentUser.balance <amountUserPay){
+                next({
+                    status:500,
+                    message:"insufficiant balance"
+                })
+            }else{
+                 if(!result[0].paid){
+                await Promise.all([
+                    UserModel.findByIdAndUpdate(
+                        currentUser._id,
+                        {
+                            sapati:currentUser.sapati - result[0].sapatiAmount,
+                            balance:currentUser.balance - result[0].sapatiAmount
+                        }                    
+                        ),
+
+                    UserModel.findByIdAndUpdate(
+                        admin,
+                        {
+                            balance:adminData[0].balance + result[0].sapatiAmount
+                        }
+
+                    ),
+                        SapatiModel.findByIdAndUpdate(
+                            sapatiId,
+                            {
+                                paid:true
+                            }
+                        )
+                ]);
+
+                res.send(
+                    {
+                        message:"Successfully paid",
+                        status:true
+                    }
+
+                )
+            }
+
+            }
+
+           
+            
+            
+        }catch(error){
+            console.log("error from here")
+            next(error);
+        }
+
+
+
+
+
+
+    }
+    
+
+
 }
 module.exports= BalanceController;

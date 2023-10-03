@@ -7,6 +7,7 @@ const balance_ctrl = new BalanceController();
 savingRoutes.route("/saving")
     .post(letLogoinCheck,balance_ctrl.saveMoney)
     .get(letLogoinCheck, balance_ctrl.fetchSavingDetailes);
+    
 
 savingRoutes.route("/withdrawsaving/:id")
     .post(letLogoinCheck,balance_ctrl.withdraw);

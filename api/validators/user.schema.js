@@ -10,7 +10,10 @@ const emailValidationSchema = Joi.object({
 const userloginValidation = Joi.object({
     email:Joi.string().email().required().trim(),
     password:Joi.string().required().min(6),
-})
+});
+const passwordUpdateValidation = Joi.object({
+    password:Joi.string().required().min(6),
+});
 const userCreateSchema = Joi.object({
     name:Joi.string().required().trim(),
     email:Joi.string(),
@@ -19,4 +22,4 @@ const userCreateSchema = Joi.object({
     mpin:Joi.string().required().min(4).trim()
 }).options({ abortEarly: false });
 
-module.exports = {userCreateSchema, emailValidationSchema,userloginValidation}
+module.exports = {userCreateSchema, emailValidationSchema,userloginValidation,passwordUpdateValidation}

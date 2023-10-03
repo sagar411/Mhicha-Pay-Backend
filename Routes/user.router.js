@@ -21,4 +21,15 @@ userRoute.route("/receiver/:email")
 userRoute.route("/update-profile")
     .put(letLogoinCheck,user_ctrl.updateUser);
 
+userRoute.route("/update-password-request")
+    .post(user_ctrl.resetPasswordRequest);
+userRoute.route("/update-password-otp-validate")
+    .post(user_ctrl.otpVerifyByEmail);
+
+userRoute.route("/update-password/:email")
+    .put(user_ctrl.changePassword);
+
+userRoute.route("/update-twofactor")
+    .put(letLogoinCheck,user_ctrl.updateTwoFactorState)
+
 module.exports = userRoute;
