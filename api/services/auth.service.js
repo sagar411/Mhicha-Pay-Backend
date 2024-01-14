@@ -8,9 +8,7 @@ class AuthService{
         try{
             const receiver = await UserModel.findOne({"email":email});
             return receiver;
-        }catch(err){
-          
-            
+        }catch(err){  
             throw err;
         }
     }

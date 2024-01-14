@@ -156,13 +156,12 @@ class UserController {
                 const {error,value} = userloginValidation.validate(req.body);
                 console.log(value.email,value.password);
                 if(error){
-                    throw  error
+                    next(error);
                 }else{
                     const user =await auth_svc.loginService(value.email, value.password);
                     res.send(
                         user
                     );
-
                 }
             }catch(err){
                 logger.error(err);

@@ -42,7 +42,6 @@ class UserService{
                 password:data.password,
                 mpin: data.mpin
             });
-            
             return user.save();
         }catch(err){
             throw err;
